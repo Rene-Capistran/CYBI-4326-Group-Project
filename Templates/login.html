@@ -18,12 +18,14 @@
 
     {{ form.username(placeholder="username") }}
     <br>
-    {{ form.password(placeholder="password") }}
+    {{ form.password(type="password", placeholder="password") }}
     <br>
     {{ form.submit }}
     <a href=" {{ url_for('register') }}">Create an account</a>
-
-
-
+    
+    <!-- flash messages -->
+    {% for message in get_flashed_messages() %}
+    <span class="error_label">{{ message }}</span>
+    {% endfor %}
 </form>
 {% endblock %}

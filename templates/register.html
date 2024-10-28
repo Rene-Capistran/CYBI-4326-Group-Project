@@ -13,16 +13,33 @@
 
 <!-- Form -->
 <form action="/register" method="post">
+    {{ form.hidden_tag() }}
+
     {{ form.username(placeholder='username') }}
     <br>
     {{ form.email(placeholder='email') }}
     <br>
-    {{ form.password(placeholder='password') }}
+    {{ form.password( type="password", placeholder='password') }}
     <br>
     {{ form.submit }}
     <br>
-    <a href=" {{ url_for('login') }}"> Sign in to an existing account </a>
+    <a href="{{ url_for('login') }}"> Sign in to an existing account </a>
     
+    <p>
+        {% for error in form.password.errors %}
+        <span class="error_label"> {{ error }} </span>
+        {% endfor %}
+        <br>
+        {% for error in form.email.errors %}
+        <span class="error_label"> {{ error }} </span>
+        {% endfor %}
+    </p>
+    <!-- flash messages -->
+    {% for message in get_flashed_messages() %}
+    <span class="error_label">{{ message }}</span>
+    {% endfor %}
 
 </form>
+
+
 {% endblock %}
