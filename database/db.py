@@ -21,8 +21,8 @@ def connectDB():
 
 
 
-# Database management
-
+    # Database management
+# Table creation
 def create_user_credentials():
     connection = connectDB()
     if connection is not None:
@@ -38,6 +38,33 @@ def create_user_credentials():
                     );
                     """)
 
+def create_user_preferences():
+    connection = connectDB()
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("""
+        CREATE TABLE user_preferences(
+                    user_id SMALLINT UNSIGNED,
+                    theme ENUM ('light', 'dark') DEFAULT 'dark', 
+                    FOREIGN KEY (user_id) REFERENCES user_credentials(id) ON DELETE CASCADE
+                    );
+                    """)
+
+
+# Triggers
+def preferences_trigger():
+    connection = connectDB()
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("""CREATE TRIGGER create_prefs
+             AFTER INSERT ON user_credentials
+             FOR EACH ROW
+             BEGIN
+             INSERT INTO user_preferences (user_id, theme)
+             VALUES (NEW.id, 'light');
+             END;""")
+
+# Table management
 def drop_table(table):
     connection = connectDB()
     if connection is not None:
@@ -57,5 +84,8 @@ def show_tables():
         cursor.execute("SHOW TABLES")
 
 
+# drop_table('user_preferences')
 # drop_table('user_credentials')
 # create_user_credentials()
+# create_user_preferences()
+# preferences_trigger()
