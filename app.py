@@ -2,15 +2,14 @@ from flask import Flask, render_template, redirect, request, url_for, session, f
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, EmailField, TelField
 from wtforms.validators import DataRequired, ValidationError, Email
-from password_strength import PasswordPolicy
 from database.db import connectDB
 from argon2 import PasswordHasher
-import os, email_validator
+import os
 
 app = Flask(__name__)
 
-# super secure CSRF key
-app.config['SECRET_KEY'] = 'insecureSecretKey123'
+# CSRF key
+app.config['SECRET_KEY'] = os.environ.get('CSRFtoken')
 
 # Database
 connection = connectDB()

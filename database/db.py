@@ -1,15 +1,17 @@
 import mysql.connector
+from os import environ
 
 # Connection
 def connectDB():
     connection = None
+    host, user, password, database, port = environ.get('dbCreds').split('/')
     try:
         connection = mysql.connector.connect(
-            host='192.168.1.160',
-            user='admin',
-            password='password',
-            database='dbPassMan',
-            port='3306'
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            port=port
         )
         if connection.is_connected():
             print("Connected to MySQL Server")
@@ -17,8 +19,6 @@ def connectDB():
     except mysql.connector.Error as e:
         print(f"Error: {e}")
     return connection
-
-
 
 
     # Database management
