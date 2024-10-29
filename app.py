@@ -101,15 +101,18 @@ def login():
         password = None
         
         if form.validate_on_submit():
-            cursor.execute(f"SELECT username FROM user_credentials WHERE username='{form.username.data}'") # implement proper input sanitation
+            query = "SELECT username FROM user_credentials WHERE username=%s"
+            cursor.execute(query, (form.username.data,))
             user = cursor.fetchone()
             if user is not None:
-                cursor.execute(f"SELECT salt, hash FROM user_credentials WHERE username='{form.username.data}'")
+                query = "SELECT salt, hash FROM user_credentials WHERE username=%s"
+                cursor.execute(query, (form.username.data,))
                 salt, hash = cursor.fetchone()
                 print(f'Salt: {salt}, Hash: {hash}')
                 newHash = hashGenerator(form.password.data, salt)
                 if newHash == hash:
-                    cursor.execute(f"SELECT id FROM user_credentials WHERE username='{form.username.data}'")
+                    query = "SELECT id FROM user_credentials WHERE username=%s"
+                    cursor.execute(query, (form.username.data,))
                     session['user_id'] = cursor.fetchone()
                     session['username'] = form.username.data
                     print(f'Successful login from {user}')
@@ -133,10 +136,12 @@ def register():
         hash = None
 
         if form.validate_on_submit():
-            cursor.execute(f"SELECT username FROM user_credentials WHERE username='{form.username.data}'")
+            query = "SELECT username FROM user_credentials WHERE username=%s"
+            cursor.execute(query, (form.username.data,))
             user = cursor.fetchone()
             if user is None:
-                cursor.execute(f"SELECT username FROM user_credentials WHERE email='{form.email.data}'")
+                query = "SELECT username FROM user_credentials WHERE email=%s"
+                cursor.execute(query, (form.email.data,))  # The comma ensures that form.email.data creates a single-element tuple
                 email = cursor.fetchone()
                 if email is None:
                     username = form.username.data
@@ -146,7 +151,8 @@ def register():
                     cursor.execute(query, (username, email, salt, hash))
                     connection.commit()
                     print(f'{cursor.rowcount} rows affected.')
-                    cursor.execute(f"SELECT id FROM user_credentials WHERE username='{form.username.data}'")
+                    query = "SELECT id FROM user_credentials WHERE username=%s"
+                    cursor.execute(query, (form.username.data,))
                     session['user_id'] = cursor.fetchone()
                     session['username'] = form.username.data
                     print(session.get('user_id'))

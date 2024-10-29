@@ -61,7 +61,7 @@ def preferences_trigger():
              FOR EACH ROW
              BEGIN
              INSERT INTO user_preferences (user_id, theme)
-             VALUES (NEW.id, 'light');
+             VALUES (NEW.id, 'dark');
              END;""")
 
 # Table management
@@ -82,7 +82,6 @@ def show_tables():
     if connection is not None:
         cursor = connection.cursor()
         cursor.execute("SHOW TABLES")
-
 
 # drop_table('user_preferences')
 # drop_table('user_credentials')
