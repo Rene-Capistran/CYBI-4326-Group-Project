@@ -2,7 +2,7 @@
 
 <!-- head -->
 {% block head %}
-<title>Login</title>
+<title>Set MP</title>
 
 <!-- Stylesheet -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
@@ -11,30 +11,26 @@
 <!-- Body -->
 {% block body %}
 
-<h1>Login</h1>
-
+<div id="titleCont">
+    <h1>Set your Master Password</h1>
+</div>
 <!-- Form -->
-<form action="/login" method="post">
+<form action="/setmp" method="post">
 
     {{ form.hidden_tag() }}
     <div class="floatingContainer" id="container">
         <div class="formBlock">
-            {{ form.username.label(class='Label') }}
-            {{ form.username(placeholder="username") }}
+            {{ form.masterPass.label(class='Label') }}
+            {{ form.masterPass(type="password", placeholder="password") }}
         </div>
         <div class="formBlock">
-            {{ form.password.label(class='Label') }}
-            {{ form.password(type="password", placeholder="password") }}
+            {{ form.confirmPass.label(class='Label') }}
+            {{ form.confirmPass(type="password", placeholder="password") }}
         </div>
         <div class="formBlock">
             {{ form.submit }}
         </div>
-        <div class="formBlock">
-            <a href=" {{ url_for('register') }}">Create an account</a>
-        </div>
-        <a href=" {{ url_for('recover') }}">Forgot Password?</a>
     </div>
-    
     <!-- error messages -->
     <p>
         {% for message in get_flashed_messages() %}

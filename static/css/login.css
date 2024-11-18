@@ -1,0 +1,31 @@
+body{
+    background-image: url("..\\assets\\fullPageLogo.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-size: cover;
+    font-family: 'Figtree', sans-serif;
+    text-align: justify;
+    overflow: hidden;
+}
+
+h1{
+    font-weight: 600;
+    font-size:75px;
+    color: #4FB5FF;
+    margin-bottom: 0px;
+    text-shadow: 3px 3px 10px #014a7e;
+}
+
+
+.error_label{
+    margin-left: 15%;
+}
+
+#container{
+    margin-top: 10%;
+    margin-left: 15%;
+}
+
+#titleCont{
+    width: 565px;
+}

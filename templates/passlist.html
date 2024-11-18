@@ -1,0 +1,61 @@
+
+{% extends 'base.html' %}
+
+<!-- head -->
+{% block head %}
+<title>Saved Passwords</title>
+
+<!-- Stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/passlist.css') }}">
+{% endblock %}
+
+<!-- Body -->
+{% block body %}
+
+<div id="titleCont">
+    <h1>Saved Passwords</h1>
+</div>
+
+    <table style="border: 1px;">
+        <thead>
+            <tr>
+                <th>Account</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <form method="POST" style="display:inline;">
+                    {{ form.hidden_tag() }} 
+                    <input type="hidden" name="entry_id" value="{{ account.id }}">
+                    <input type="hidden" name="account_name" value="{{ account.name }}">
+                    <button type="submit">Reveal Password</button>
+                    <div class="formBlock">
+                        {{ form.masterPass.label(class='Label') }}
+                        {{ form.masterPass(type="password", placeholder="password") }}
+                    </div>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if decrypted_password %}
+    <div>
+        <h3>Password for {{ account_name }}:</h3>
+        <p>{{ decrypted_password }}</p>
+    </div>
+    {% endif %}
+
+    <!-- error messages -->
+    <!-- <p>
+        {% for message in get_flashed_messages() %}
+            <span class="error_label">{{ message }}</span>
+        {% endfor %}
+    </p> -->
+
+{% endblock %}
+
+

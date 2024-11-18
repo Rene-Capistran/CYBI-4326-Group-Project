@@ -34,6 +34,8 @@ def create_user_credentials():
                     email VARCHAR(60) NOT NULL UNIQUE,
                     salt BINARY(32),
                     hash VARCHAR(45),
+                    master VARCHAR(45),
+                    masterSalt BINARY(32),
                     date_added DATETIME DEFAULT NOW()
                     );
                     """)
@@ -45,7 +47,26 @@ def create_user_preferences():
         cursor.execute("""
         CREATE TABLE user_preferences(
                     user_id SMALLINT UNSIGNED,
-                    theme ENUM ('light', 'dark') DEFAULT 'dark', 
+                    theme ENUM ('light', 'dark', 'sky') DEFAULT 'sky', 
+                    FOREIGN KEY (user_id) REFERENCES user_credentials(id) ON DELETE CASCADE
+                    );
+                    """)
+        
+def create_user_data():
+    connection = connectDB()
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("""
+        CREATE TABLE user_data(
+                    entry_id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    user_id SMALLINT UNSIGNED,
+                    account VARCHAR(255),
+                    ciphertext BLOB,
+                    iv BLOB,
+                    salt BINARY(32),
+                    iteration INT,
+                    favorite BOOL DEFAULT FALSE,
+                    date_added DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES user_credentials(id) ON DELETE CASCADE
                     );
                     """)
@@ -61,8 +82,9 @@ def preferences_trigger():
              FOR EACH ROW
              BEGIN
              INSERT INTO user_preferences (user_id, theme)
-             VALUES (NEW.id, 'dark');
+             VALUES (NEW.id, 'sky');
              END;""")
+        
 
 # Table management
 def drop_table(table):
@@ -84,7 +106,11 @@ def show_tables():
         cursor.execute("SHOW TABLES")
 
 # drop_table('user_preferences')
+# drop_table('user_data')
 # drop_table('user_credentials')
+
+
 # create_user_credentials()
 # create_user_preferences()
+# create_user_data()
 # preferences_trigger()

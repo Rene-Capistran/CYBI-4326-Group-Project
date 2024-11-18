@@ -2,16 +2,86 @@
 
 <!--head-->
 {% block head %}
+<!-- Stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+
 <title>Homepage</title>
 {% endblock %}
 
 <!--Body-->
 {% block body %}
-    <!-- flash messages -->
-    {% for message in get_flashed_messages() %}
-    <span class="error_label" style="font-size: larger;">{{ message }}</span>
-    {% endfor %}
-    <br>
-    <a href=" {{ url_for('logout') }}" style="font-size: large;"> Log out </a>
+
+
+<!-- flash messages -->
+<div id = "spanContainer">
+{% for message in get_flashed_messages() %}
+    <span class="spanHeader">{{ message }}</span>
+{% endfor %}
+    <span class="spanHeader">date</span>
+</div>
+
+
+<div id="dashboardContainer">
+    <div class="floatingContainer dashSideElement dashLarge">
+        <div class="center"> <p class="contHeader">Audit Log</p> </div>
+        <p>text</p>
+    </div>
+    <div id="innerDash">
+        <h1 id="dashLabel">Dashboard</h1>
+        <div id="centralDashCont">
+            <div class="floatingContainer dashSideElement dashMed">
+                <div class="center"> <p class="contHeader">Favorites</p> </div>
+                <p>text</p>
+            </div>
+            <div style="display: grid;">
+                <div class="floatingContainer dashSideElement dashSmall">
+                    <div class="center"> <p class="contHeader">Add an account</p> </div>
+                    <form method="POST">
+                        {{ insert_form.hidden_tag() }}
+
+                        <div class="formBlock">
+                            {{ insert_form.account.label(class='Label') }}
+                            {{ insert_form.account(placeholder="account") }}
+                        </div>
+                        <div class="formBlock">
+                            {{ insert_form.accountPass.label(class='Label') }}
+                            {{ insert_form.accountPass(type="password", placeholder="account") }}
+                        </div>
+                        <div class="formBlock">
+                            {{ insert_form.confirmPass.label(class='Label') }}
+                            {{ insert_form.confirmPass(type="password", placeholder="password") }}
+                        </div>
+                        <div class="formBlock">
+                            {{ insert_form.masterPass.label(class='Label') }}
+                            {{ insert_form.masterPass(type="password", placeholder="password") }}
+                        </div>
+                        {{ insert_form.submit }}
+                    </form>
+                </div>
+                <div class="center" style="margin-top: 10px;">
+                    <div class="floatingContainer dashSideElement dashBtn">
+                        <a href="{{ url_for('passlist') }}" class="center"> <p class="btnHeader">View all accounts</p> </a>
+                    </div>
+                </div>
+                <p id="notice" >Remember, we will <strong><i>NEVER</i></strong> ask you for <strong><i>ANY</i></strong> of your passwords, 
+                    including your master password. Report any suspicious messages or requests to support.</p>
+            </div>
+            <div class="floatingContainer dashSideElement dashMed">
+                <div class="center"> <p class="contHeader">Frequently accessed</p> </div>
+                <p>text</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="floatingContainer dashSideElement dashLarge center">
+        <div class="formBlock"> <p class="contHeader">Settings</p> </div>
+        <a href="{{ url_for('logout') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">Logout</p> </div></a>
+    </div>
+</div>
+
+
+
+
+<!-- <a href=" {{ url_for('logout') }}" style="font-size: large;"> Log out </a> -->
 
 {% endblock %}

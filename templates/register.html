@@ -5,38 +5,58 @@
 <title>Register</title>
 
 <!-- Stylesheet -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 {% endblock %}
 
 <!-- Body -->
 {% block body %}
 
+<h1>Register</h1>
+
 <!-- Form -->
 <form action="/register" method="post">
     {{ form.hidden_tag() }}
-
-    {{ form.username(placeholder='username') }}
-    <br>
-    {{ form.email(placeholder='email') }}
-    <br>
-    {{ form.password( type="password", placeholder='password') }}
-    <br>
-    {{ form.submit }}
-    <br>
-    <a href="{{ url_for('login') }}"> Sign in to an existing account </a>
     
-    <p>
-        {% for error in form.password.errors %}
-        <span class="error_label"> {{ error }} </span>
+    <div class="floatingContainer" id="container">
+        <div class="formBlock">
+            {{ form.username.label(class='Label') }}
+            {{ form.username(placeholder='username') }}
+        </div>
+
+        <div class="formBlock">
+            {{ form.email.label(class='Label') }}
+            {{ form.email(placeholder='email') }}
+        </div>
+
+        <div class="formBlock">
+            {{ form.password.label(class='Label') }}
+            {{ form.password( type="password", placeholder='password') }}
+        </div>
+
+        <div class="formBlock">
+            {{ form.confirmPass.label(class='Label') }}
+            {{ form.confirmPass( type="password", placeholder='password') }}
+        </div>
+        
+        <div class="formBlock">
+            {{ form.submit }}
+        </div>
+
+        <a href="{{ url_for('login') }}"> Sign in to an existing account </a>
+    </div>
+
+
+        <!-- flash messages -->
+    <div class="formBlock" style="padding-top: 10px;">
+        {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                <p class="error_label">{{ error }}</p>
+            {% endfor %}
         {% endfor %}
-        <br>
-        {% for error in form.email.errors %}
-        <span class="error_label"> {{ error }} </span>
-        {% endfor %}
-    </p>
-    <!-- flash messages -->
+    </div>
+
     {% for message in get_flashed_messages() %}
-    <span class="error_label">{{ message }}</span>
+        <span class="error_label">{{ message }}</span>
     {% endfor %}
 
 </form>

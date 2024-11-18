@@ -1,3 +1,66 @@
+body{
+    background-image: linear-gradient(#b4f6ff, #dcf8fc);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    padding: 0 10px 0 10px;
+    margin: 0;
+    overflow: auto;
+}
+form input[type="text"],
+form input[type="password"],
+form textarea,
+form input[type="email"],
+form input[type="tel"],
+form input[type="search"],
+form input[type="url"],
+form input[type="submit"],
+form select,
+form button {
+
+    font-size: larger;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+h1{
+    font-weight: 600;
+    font-size:30px;
+    color: #000000;
+    margin-bottom: 0px;
+}
+
 .error_label{
     color: red;
+}
+.formBlock{
+    margin-bottom: 1rem;
+}
+
+.floatingContainer{
+    border-radius: 5px;
+    box-shadow: 3px 3px 10px rgb(42, 60, 66);
+    display: inline-block;
+    padding: 30px 15px 15px 15px;
+}
+
+.Label{
+    display: block;
+    margin-bottom: 5px;
+}
+
+.contHeader{
+    font-size: x-large;
+    font-weight: bold;
+}
+
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+.btnHeader{
+    margin-top: 10px;
+    font-size: x-large;
+    font-weight: bold;
 }
