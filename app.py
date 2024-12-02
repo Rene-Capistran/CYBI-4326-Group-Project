@@ -6,12 +6,14 @@ from database.db import connectDB
 from argon2 import PasswordHasher, low_level
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+from datetime import timedelta, date
 import os
 
 app = Flask(__name__)
 
 # CSRF key
 app.config['SECRET_KEY'] = os.environ.get('CSRFtoken')
+
 
 # Database
 connection = connectDB()
@@ -43,6 +45,13 @@ def hashGenerator(password, salt):
         print('Password verification error')
         return -1
 
+def getIP():
+    # Check if the app is behind a proxy
+    if 'X-Forwarded-For' in request.headers:
+        ip = request.headers['X-Forwarded-For'].split(',')[0]
+    else:
+        ip = request.remote_addr
+    return ip
 
 # WTForms password validator
 def validatePassword(form, field):
@@ -109,6 +118,14 @@ class viewForm(FlaskForm):
     masterPass = StringField("Master Password: ", validators=[DataRequired()])
     submit = SubmitField("Reveal Password")
 
+# Delete form
+class deleteForm(FlaskForm):
+    masterPass = StringField("Master Password: ", validators=[DataRequired()])
+    submit = SubmitField("Remove Credentials")
+
+# Favorites form
+class favoriteForm(FlaskForm):
+    submit = SubmitField("Add favorite")
 # ====================================================================================== Routes
 # Default route
 @app.route('/')
@@ -125,10 +142,32 @@ def homepage():
         if not session.get('mp'):
             return redirect(url_for('setmp'))
         else:
-            print(f"Session found! {session.get('mp')}")
+            user_id = session.get('user_id')
+
+            # Populate Audit log
+            audit_log = []
+            query = "SELECT event, event_date, access_ip FROM audit_log WHERE user_id=%s"
+            cursor.execute(query, (user_id,))
+            events = cursor.fetchall()
+            for item in events:
+                audit_log.append({'event': item[0], 'date': item[1], 'IP': item[2]})
+
+            # Populate Favorites
+            favorites= []
+            query = "SELECT account, favorite FROM user_data WHERE user_id=%s"
+            cursor.execute(query, (user_id,))
+            accounts = cursor.fetchall()
+            for item in accounts:
+                favorites.append({'account': item[0], 'status': item[1]})
+
+            # Setting date
+            current_date = date.today()
+
+
+ 
             greeting = f"Hello, {session['username']}."
             flash(greeting)
-            user_id = session.get('user_id')
+            
             
             # Account insertion backend
             insert_form = insertForm()
@@ -173,64 +212,19 @@ def homepage():
                         cursor.execute(query, (user_id, account, ciphertext, iv, salt, currentIteration))
                         connection.commit()
 
+                        query = "INSERT INTO audit_log (user_id, event, access_ip) VALUES (%s, %s, %s)"
+                        cursor.execute(query, (user_id, 'added credentials', getIP()))
+                        connection.commit()
+
+
                         return redirect(url_for('homepage'))
 
 
 
-            return render_template('home.html', insert_form=insert_form)
+            return render_template('home.html', insert_form=insert_form, auditLog=audit_log, favorites=favorites, date=current_date)
     else:
         return redirect(url_for('login'))
 
-
-
-# Password list route
-@app.route('/passlist', methods=['GET', 'POST'])
-def passlist():
-    if session.get('user_id'):
-        if not session.get('mp'):
-            return redirect(url_for('setmp'))
-        else:
-            user_id = session.get('user_id')
-            form = viewForm()
-            accList = []
-            query = "SELECT account,entry_id FROM user_data WHERE user_id=%s"   #    x, y, z = list
-            cursor.execute(query, (user_id,))
-            accounts = cursor.fetchall()
-            for item in accounts:
-                accList.append({'name': item[0], 'id': item[1]})
-    else:
-        return redirect(url_for('login'))
-    if form.validate_on_submit():
-        # Logic to ecrypt and reveal password
-        mPass = form.masterPass.data
-        entry_id = request.form.get('entry_id') 
-
-        query = "SELECT master, masterSalt FROM user_credentials WHERE id=%s"
-        cursor.execute(query, (user_id,))
-        master, masterSalt = cursor.fetchone()
-        newHash = hashGenerator(mPass, masterSalt)
-        if newHash == master:
-            query = "SELECT ciphertext,iv,salt FROM user_data WHERE entry_id=%s"
-            cursor.execute(query, (entry_id,))
-            ciphertext, iv, salt = cursor.fetchone()
-
-             # using Argon2 to re-derive the key from the master password
-            key = low_level.hash_secret(master.encode('utf-8'), salt, hash_len=16, time_cost=2, memory_cost=102400, parallelism=8, type=low_level.Type.ID)
-
-            # Re-creating the cipher
-            cipher = AES.new(key[:16], AES.MODE_CBC, iv)
-
-            # Using the cypher to decrypt the password
-            decrypted = unpad(cipher.decrypt(ciphertext), AES.block_size).decode()
-
-            print(f'DECRYPTED: {decrypted}')
-
-
-
-
-        
-        pass
-    return render_template('passlist.html', form=form, accounts=accList)
 # Login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -264,10 +258,15 @@ def login():
                     cursor.execute(query, (username,))
                     mSalt = cursor.fetchone()[0]
                     if mSalt is not None:
-                        print(f'Master salt found>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {mSalt}')
                         session['mp'] = 1
                     print(f'Successful login from {user}')
-                    return redirect(url_for('homepage'))                          # add an audit log that tracks login attempts & time 
+
+                    # Audit log
+                    query = "INSERT INTO audit_log (user_id, event, access_ip) VALUES (%s, %s, %s)"
+                    cursor.execute(query, (session.get('user_id'), 'logged in', getIP()))
+                    connection.commit()
+
+                    return redirect(url_for('homepage'))
                 else:
                     flash('Error: Username or password incorrect')
             else:
@@ -315,6 +314,8 @@ def register():
                         cursor.execute(query, (form.username.data,))
                         session['user_id'] = cursor.fetchone()[0]
                         session['username'] = form.username.data
+                        session.permanent = False
+
                         print(session.get('user_id'))
                         
                         return redirect(url_for('homepage'))
@@ -340,16 +341,148 @@ def setmp():
             masterPass = form.masterPass.data
             if masterPass == form.confirmPass.data:
                 salt = randomSalt()
+                user_id = session.get('user_id')
                 masterPassHash = hashGenerator(masterPass, salt)
                 query = "UPDATE user_credentials SET master=%s, masterSalt=%s WHERE id=%s"
-                print(session.get('user_id'))
-                cursor.execute(query, (masterPassHash, salt, session.get('user_id')))
+                cursor.execute(query, (masterPassHash, salt, user_id))
+                connection.commit()
+
+                query = "INSERT INTO audit_log (user_id, event, access_ip) VALUES (%s, %s, %s)"
+                cursor.execute(query, (user_id, 'set master pass', getIP()))
+                connection.commit()
+
+                
                 session['mp'] = 1
                 return redirect(url_for('homepage'))
             else:
                 flash("Error: Passwords do not match")
 
         return render_template('setmp.html', form=form)
+    
+# Password list route
+@app.route('/passlist', methods=['GET', 'POST'])
+def passlist():
+    if session.get('user_id'):
+        if not session.get('mp'):
+            return redirect(url_for('setmp'))
+        else:
+            user_id = session.get('user_id')
+            form = viewForm()
+            accList = []
+            query = "SELECT account,entry_id FROM user_data WHERE user_id=%s"   #    x, y, z = list
+            cursor.execute(query, (user_id,))
+            accounts = cursor.fetchall()
+            for item in accounts:
+                accList.append({'name': item[0], 'id': item[1]})
+    else:
+        return redirect(url_for('login'))
+    
+    decrypted_pass = None
+    if form.validate_on_submit():
+        # Logic to decrypt and reveal password
+        print('Validated')
+        mPass = form.masterPass.data
+        entry_id = request.form.get('entry_id') 
+
+        query = "SELECT master, masterSalt FROM user_credentials WHERE id=%s"
+        cursor.execute(query, (user_id,))
+        master, masterSalt = cursor.fetchone()
+        newHash = hashGenerator(mPass, masterSalt)
+        if newHash == master:
+            print('Hash matched')
+            query = "SELECT ciphertext,iv,salt FROM user_data WHERE entry_id=%s"
+            cursor.execute(query, (entry_id,))
+
+            ciphertext, iv, salt = cursor.fetchone()
+
+             # using Argon2 to re-derive the key from the master password
+            key = low_level.hash_secret(master.encode('utf-8'), salt, hash_len=16, time_cost=2, memory_cost=102400, parallelism=8, type=low_level.Type.ID)
+
+            # Re-creating the cipher
+            cipher = AES.new(key[:16], AES.MODE_CBC, iv)
+
+            # Using the cypher to decrypt the password
+            decrypted_pass = unpad(cipher.decrypt(ciphertext), AES.block_size).decode()
+            
+            # Audit log
+            query = "INSERT INTO audit_log (user_id, event, access_ip) VALUES (%s, %s, %s)"
+            cursor.execute(query, (user_id, 'credentials accessed', getIP()))
+            connection.commit()
+
+    return render_template('passlist.html', form=form, accounts=accList, decrypted_pass=decrypted_pass)
+# Credential deletion route
+@app.route('/delete', methods=['GET', 'POST'])
+def delete():
+    if session.get('user_id'):
+        if not session.get('mp'):
+            return redirect(url_for('setmp'))
+        else:
+            user_id = session.get('user_id')
+            form = deleteForm()
+            accList = []
+            query = "SELECT account,entry_id FROM user_data WHERE user_id=%s"
+            cursor.execute(query, (user_id,))
+            accounts = cursor.fetchall()
+            for item in accounts:
+                accList.append({'name': item[0], 'id': item[1]})
+    else:
+        return redirect(url_for('login'))
+    
+    if form.validate_on_submit():
+        mPass = form.masterPass.data
+        entry_id = request.form.get('entry_id') 
+
+        query = "SELECT master, masterSalt FROM user_credentials WHERE id=%s"
+        cursor.execute(query, (user_id,))
+        master, masterSalt = cursor.fetchone()
+        newHash = hashGenerator(mPass, masterSalt)
+        if newHash == master:
+            query = "DELETE FROM user_data WHERE entry_id=%s"
+            cursor.execute(query, (entry_id,))
+            connection.commit()
+
+            # Audit log
+            query = "INSERT INTO audit_log (user_id, event, access_ip) VALUES (%s, %s, %s)"
+            cursor.execute(query, (user_id, 'removed credentials', getIP()))
+            connection.commit()
+
+    return render_template('delete.html', form=form, accounts=accList)
+
+@app.route('/favorites', methods=['GET', 'POST'])
+def favorite():
+    if session.get('user_id'):
+        if not session.get('mp'):
+            return redirect(url_for('setmp'))
+        else:
+            user_id = session.get('user_id')
+            form = favoriteForm()
+            accList = []
+            query = "SELECT account,entry_id,favorite FROM user_data WHERE user_id=%s"
+            cursor.execute(query, (user_id,))
+            accounts = cursor.fetchall()
+            for item in accounts:
+                accList.append({'name': item[0], 'id': item[1], 'status': item[2]})
+    else:
+        return redirect(url_for('login'))
+    if form.validate_on_submit():
+        entry_id = request.form.get('entry_id') 
+    
+        # Check for current favorite status
+        query = "SELECT favorite FROM user_data WHERE entry_id=%s"
+        cursor.execute(query, (entry_id,))
+
+        # Inverting favorite setting
+        currentFav = cursor.fetchone()
+        newFav = not currentFav[0]
+        
+        print(f"Old favorite setting: {currentFav}    New setting: {newFav}")
+        # updating DB
+        query = "UPDATE user_data SET favorite=%s WHERE entry_id=%s"
+        cursor.execute(query, (newFav, entry_id))
+        connection.commit()
+
+    return render_template('favorite.html', form=form, accounts=accList)
+
     
 # Logout route
 @app.route('/logout')

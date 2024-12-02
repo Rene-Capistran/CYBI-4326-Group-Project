@@ -3,37 +3,35 @@
 
 <!-- head -->
 {% block head %}
-<title>Saved Passwords</title>
+<title>Favorites</title>
 
 <!-- Stylesheet -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/passlist.css') }}">
-<script src="{{ url_for('static', filename='js/passlist.js') }}"></script>
 {% endblock %}
 
 <!-- Body -->
 {% block body %}
 
 <div id="titleCont">
-    <h1>Saved Passwords</h1>
+    <h1>Toggle Favorites</h1>
 </div>
 
     <table style="border: 1px;">
         <thead>
             <tr>
                 <th>Account</th>
-                <th>Password</th>
+                <th>Toggle</th>
+                <th>Current</th>
             </tr>
         </thead>
         <tbody>
             <form method="POST" style="display:inline;">
                 {{ form.hidden_tag() }} 
-                <p id="decPass" style="display: block"><h3 style="display: inline;">Password: </h3> <h4 style="display: inline;" id="passText">{{ decrypted_pass if decrypted_pass  else '' }}</h4></p>
-                {{ form.masterPass(type="password", placeholder="Master Password", id="mp_{{ account.id }}") }}
                 {% for account in accounts %}
                 <tr>
                     <td>{{ account.name }}</td>
-                    <td><button type="submit" class="reveal_btn" name="entry_id" value="{{ account.id }}">Reveal Password</button></td>
-                        <input type="hidden" name="account_name" value="{{ account.name }}">       
+                    <td><button type="submit" class="reveal_btn" name="entry_id" value="{{ account.id }}">Toggle Favorite</button></td>
+                        <input type="hidden" name="account_name" value="{{ account.name }}"> 
+                    <td> {{ account.status }} </td>               
                 </tr>
             {% endfor %}
             </form>
@@ -42,6 +40,7 @@
     <div class="formBlock">
         <a href="{{ url_for('homepage') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">Return Home</p> </div></a>
     </div>
+
 {% endblock %}
 
 

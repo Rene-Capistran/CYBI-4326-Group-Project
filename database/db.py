@@ -32,6 +32,7 @@ def create_user_credentials():
                     id SMALLINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                     username VARCHAR(30) NOT NULL UNIQUE,
                     email VARCHAR(60) NOT NULL UNIQUE,
+                    type ENUM ('user', 'admin') DEFAULT 'user',
                     salt BINARY(32),
                     hash VARCHAR(45),
                     master VARCHAR(45),
@@ -71,6 +72,19 @@ def create_user_data():
                     );
                     """)
 
+def create_audit_log():
+    connection = connectDB()
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute("""
+        CREATE TABLE audit_log(
+                    user_id SMALLINT UNSIGNED,
+                    event ENUM ('logged in', 'added credentials', 'removed credentials', 'set master pass', 'credentials accessed'),
+                    event_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    access_ip VARCHAR(32),
+                    FOREIGN KEY (user_id) REFERENCES user_credentials(id) ON DELETE CASCADE
+                    );
+                    """)
 
 # Triggers
 def preferences_trigger():
@@ -107,10 +121,11 @@ def show_tables():
 
 # drop_table('user_preferences')
 # drop_table('user_data')
+# drop_table('audit_log')
 # drop_table('user_credentials')
-
 
 # create_user_credentials()
 # create_user_preferences()
 # create_user_data()
 # preferences_trigger()
+# create_audit_log()

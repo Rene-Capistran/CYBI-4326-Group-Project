@@ -17,22 +17,50 @@
 {% for message in get_flashed_messages() %}
     <span class="spanHeader">{{ message }}</span>
 {% endfor %}
-    <span class="spanHeader">date</span>
+    <span class="spanHeader">{{ date }}</span>
 </div>
 
 
 <div id="dashboardContainer">
-    <div class="floatingContainer dashSideElement dashLarge">
+    <div class="floatingContainer dashSideElement dashLarge" id="audit">
         <div class="center"> <p class="contHeader">Audit Log</p> </div>
-        <p>text</p>
+        <table style="border: 1px;">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in auditLog %}
+                <tr>
+                    <td>{{ log.event }}</td>
+                    <td style="padding: 10px;">{{ log.date }}</td>
+                    <td>{{ log.IP }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
     </div>
     <div id="innerDash">
         <h1 id="dashLabel">Dashboard</h1>
         <div id="centralDashCont">
-            <div class="floatingContainer dashSideElement dashMed">
+            <div class="floatingContainer dashSideElement dashMed" style="overflow-y: scroll;">
                 <div class="center"> <p class="contHeader">Favorites</p> </div>
-                <p>text</p>
-            </div>
+                    <table style="border: 1px;">
+                        <div class="formBlock">
+                            <tbody>
+                                {% for favorite in favorites %}
+                                <tr>
+                                    <td>{{ favorite.account if favorite.status == 1}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </div>
+                    </table>
+                </div>
             <div style="display: grid;">
                 <div class="floatingContainer dashSideElement dashSmall">
                     <div class="center"> <p class="contHeader">Add an account</p> </div>
@@ -58,24 +86,23 @@
                         {{ insert_form.submit }}
                     </form>
                 </div>
-                <div class="center" style="margin-top: 10px;">
-                    <div class="floatingContainer dashSideElement dashBtn">
-                        <a href="{{ url_for('passlist') }}" class="center"> <p class="btnHeader">View all accounts</p> </a>
-                    </div>
-                </div>
                 <p id="notice" >Remember, we will <strong><i>NEVER</i></strong> ask you for <strong><i>ANY</i></strong> of your passwords, 
                     including your master password. Report any suspicious messages or requests to support.</p>
             </div>
-            <div class="floatingContainer dashSideElement dashMed">
+            <!-- <div class="floatingContainer dashSideElement dashMed">
                 <div class="center"> <p class="contHeader">Frequently accessed</p> </div>
                 <p>text</p>
-            </div>
+            </div> -->
         </div>
     </div>
 
     <div class="floatingContainer dashSideElement dashLarge center">
         <div class="formBlock"> <p class="contHeader">Settings</p> </div>
         <a href="{{ url_for('logout') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">Logout</p> </div></a>
+        <a href="{{ url_for('favorite') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">Favorites</p> </div></a>
+        <a href="{{ url_for('delete') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">Remove accounnts</p> </div></a>
+        <a href="{{ url_for('passlist') }}" class="center"><div class="formBlock dashBtn"> <p class="btnHeader">View all accounts</p> </div></a>
+        
     </div>
 </div>
 
