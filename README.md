@@ -25,7 +25,7 @@ Assuming you're using a windows machine to run the backend, start by finding 'ed
 
 Next, press 'Environment Variables...' and 'Edit...' (Just user variables should be fine).
 
-From here, you will need to create two environment variables. The first, your CSRF token:
+From here, you will need to create two environment variables. First, your CSRF token:
 
   under 'Variable name', type 'CSRFtoken'. You can make the value whatever you'd like.
   
