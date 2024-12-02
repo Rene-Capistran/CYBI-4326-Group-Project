@@ -37,4 +37,4 @@ The second will be your database credentials:
   
   For example: 192.168.1.20/billy/password/coolDatabaseName/3306
     
-  It is important to keep-in-mind that the credentials are delimited by forward-slashes.
+  It is important to keep in-mind that the credentials must be delimited by forward-slashes.
