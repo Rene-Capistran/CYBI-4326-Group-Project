@@ -40,3 +40,6 @@ From here, you will need to create two environment variables.
   For example: 192.168.1.20/billy/password/coolDatabaseName/3306
     
   #### It is important to keep in-mind that the credentials must be delimited by forward-slashes.
+
+## In order to run the project, just run app.py
+  
