@@ -1,5 +1,5 @@
 # CYBI-4326-Group-Project (Memorize)
-
+This application is a web-based password manager.
 
 # Dependencies
 ### python modules:
