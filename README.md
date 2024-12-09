@@ -62,9 +62,10 @@ Next, go to db.py and uncomment lines 127-131
 
 ![image](https://github.com/user-attachments/assets/d60f692f-c667-46d3-bb92-438e29fb1c66)
 
-## Remember to re-comment this after the tables have been created
 
 Then, run db.py to create the database tables. If you get no errors, the tables were created successfully.
+
+## re-comment lines 127-131 after the tables have been created
 
 ![image](https://github.com/user-attachments/assets/182217a2-5a0c-4709-9631-bd8d4f64243c)
 
